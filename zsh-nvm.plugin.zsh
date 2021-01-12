@@ -23,6 +23,10 @@ _zsh_nvm_install() {
 }
 
 _zsh_nvm_global_binaries() {
+  if [[ -v NVM_LAZY_LOAD_GLOBAL_COMMANDS ]]; then
+    echo ${(F)NVM_LAZY_LOAD_GLOBAL_COMMANDS}
+    return
+  fi
 
   # Look for global binaries
   local global_binary_paths=($(echo "$NVM_DIR"/v0*/bin/*(N) "$NVM_DIR"/versions/*/*/bin/*(N)))
