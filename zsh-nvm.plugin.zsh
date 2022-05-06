@@ -82,6 +82,7 @@ _zsh_nvm_completion() {
 }
 
 _zsh_nvm_lazy_load() {
+  autoload -U nvm
 
   # Get all global node module binaries including node
   # (only if NVM_NO_USE is off)
@@ -106,16 +107,16 @@ _zsh_nvm_lazy_load() {
     [[ "$(which $bin 2> /dev/null)" = "$bin: aliased to "* ]] || cmds+=($bin)
   done
 
-  # Create function for each command
-  for cmd in $cmds; do
+  # Define when the preexec should load nvm
+  _zsh_nvm_lazy_load_cmd_pattern=(${(j:|:)cmds})
+  add-zsh-hook preexec _zsh_nvm_preexec
+}
 
-    # When called, unset all lazy loaders, load nvm then run current command
-    eval "$cmd(){
-      unset -f $cmds > /dev/null 2>&1
-      _zsh_nvm_load
-      $cmd \"\$@\"
-    }"
-  done
+_zsh_nvm_preexec() {
+  if [[ $2 =~ (^|\;\ )($_zsh_nvm_lazy_load_cmd_pattern) ]]; then
+    _zsh_nvm_load
+    add-zsh-hook -d preexec _zsh_nvm_preexec
+  fi
 }
 
 nvm_update() {
